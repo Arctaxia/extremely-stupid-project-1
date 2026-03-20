@@ -1,0 +1,27 @@
+.markdown BLOCKQUOTE {
+	padding: .5rem;
+	background: #fff3;
+}
+.markdown .anchor A.alink {
+	visibility: hidden;
+}
+.markdown .anchor:hover A.alink {
+	visibility: visible;
+}
+
+.markdown .spoiler{
+	background-color:#000;
+	color:#000;
+	border: 1px solid #888;
+}
+
+DIV.md-preview {
+	margin-top: 2px;
+	outline: 2px dotted #888;
+	min-height: 1em;
+	box-sizing: border-box;
+}
+
+.markdown H1, .markdown H2, .markdown H3, .markdown H4 {
+	padding: 0;
+}
