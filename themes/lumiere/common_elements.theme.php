@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shimmie2;
 
-use function MicroHTML\{A,DIV,SPAN,joinHTML};
+use function MicroHTML\{A,B,DIV,joinHTML};
 
 use MicroHTML\HTMLElement;
 
@@ -15,63 +15,59 @@ class LumiereCommonElementsTheme extends CommonElementsTheme
         if ($total_pages === 0) {
             $total_pages = 1;
         }
-        $body = $this->litetheme_build_paginator($page_number, $total_pages, $base, $query, $show_random);
-        Ctx::$page->add_block(new Block("Paginator", $body, "main", 90));
+        $body = $this->build_paginator($page_number, $total_pages, $base, $query);
+        Ctx::$page->add_block(new Block(null, $body, "main", 90));
     }
 
-    public function litetheme_gen_page_link(string $base_url, ?QueryArray $query, int $page, string $name, ?string $link_class = null): HTMLElement
+    private function gen_page_link(string $base_url, ?QueryArray $query, int $page, string $name): HTMLElement
     {
-        return A(["href" => make_link("$base_url/$page", $query), "class" => $link_class], $name);
+        return A(["href" => make_link("$base_url/$page", $query)], $name);
     }
 
-    public function litetheme_gen_page_link_block(string $base_url, ?QueryArray $query, int $page, int $current_page, string $name): HTMLElement
+    private function gen_page_link_block(string $base_url, ?QueryArray $query, int $page, int $current_page, string $name): HTMLElement
     {
         if ($page === $current_page) {
-            $link_class = "tab-selected";
+            $paginator = B($page);
         } else {
-            $link_class = "";
+            $paginator = $this->gen_page_link($base_url, $query, $page, $name);
         }
-        return $this->litetheme_gen_page_link($base_url, $query, $page, $name, $link_class);
+        return $paginator;
     }
 
-    public function litetheme_build_paginator(int $current_page, int $total_pages, string $base_url, ?QueryArray $query, bool $show_random): HTMLElement
+    private function build_paginator(int $current_page, int $total_pages, string $base_url, ?QueryArray $query): HTMLElement
     {
         $next = $current_page + 1;
         $prev = $current_page - 1;
 
-        $at_start = ($current_page <= 1 || $total_pages <= 1);
-        $at_end = ($current_page >= $total_pages);
+        $at_start = ($current_page <= 3 || $total_pages <= 3);
+        $at_end = ($current_page >= $total_pages - 2);
 
-        $first_html  = $at_start ? SPAN(["class" => "tab"], "First") : $this->litetheme_gen_page_link($base_url, $query, 1, "First");
-        $prev_html   = $at_start ? SPAN(["class" => "tab"], "Prev") : $this->litetheme_gen_page_link($base_url, $query, $prev, "Prev");
+        $first_html  = $at_start ? "" : $this->gen_page_link($base_url, $query, 1, "1");
+        $prev_html   = $at_start ? "" : $this->gen_page_link($base_url, $query, $prev, "<<");
+        $next_html   = $at_end ? "" : $this->gen_page_link($base_url, $query, $next, ">>");
+        $last_html   = $at_end ? "" : $this->gen_page_link($base_url, $query, $total_pages, "$total_pages");
 
-        $random_html = "";
-        if ($show_random) {
-            $rand = mt_rand(1, $total_pages);
-            $random_html = $this->litetheme_gen_page_link($base_url, $query, $rand, "Random");
-        }
-
-        $next_html   = $at_end ? SPAN(["class" => "tab"], "Next") : $this->litetheme_gen_page_link($base_url, $query, $next, "Next");
-        $last_html   = $at_end ? SPAN(["class" => "tab"], "Last") : $this->litetheme_gen_page_link($base_url, $query, $total_pages, "Last");
-
-        $start = $current_page - 5 > 1 ? $current_page - 5 : 1;
-        $end = $start + 10 < $total_pages ? $start + 10 : $total_pages;
+        $start = $current_page - 2 > 1 ? $current_page - 2 : 1;
+        $end   = $current_page + 2 <= $total_pages ? $current_page + 2 : $total_pages;
 
         $pages = [];
         foreach (range($start, $end) as $i) {
-            $pages[] = $this->litetheme_gen_page_link_block($base_url, $query, $i, $current_page, strval($i));
+            $pages[] = $this->gen_page_link_block($base_url, $query, $i, $current_page, (string)$i);
+        }
+        $pages_html = joinHTML(" ", $pages);
+
+        if ($start > 2) {
+            $pdots = "...";
+        } else {
+            $pdots = "";
         }
 
-        return DIV(
-            ["class" => "paginator sfoot"],
-            $first_html,
-            $prev_html,
-            $random_html,
-            "<< ",
-            joinHTML(" ", $pages),
-            " >>",
-            $next_html,
-            $last_html
-        );
+        if ($total_pages > $end + 1) {
+            $ndots = "...";
+        } else {
+            $ndots = "";
+        }
+
+        return DIV(["id" => "paginator"], joinHTML(" ", [$prev_html, $first_html, $pdots, $pages_html, $ndots, $last_html, $next_html]));
     }
 }

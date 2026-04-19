@@ -44,7 +44,6 @@ class LumiereUserPageTheme extends UserPageTheme
     {
         // no block in this theme
     }
-
     public function display_login_block(): void
     {
         // no block in this theme
