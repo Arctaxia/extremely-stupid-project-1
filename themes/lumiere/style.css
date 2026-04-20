@@ -65,7 +65,7 @@
 }
 
 /* Temporary fix - why the tag categories editor has "display: none", I know not! Yet! */
-section#Editingmain > div.blockbody {
+section#Editingmain, section#Statsmain > div.blockbody {
 	display: block !important;
 }
 
